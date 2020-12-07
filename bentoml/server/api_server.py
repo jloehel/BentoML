@@ -92,17 +92,20 @@ class BentoAPIServer:
     """
 
     DEFAULT_PORT = config("apiserver").getint("default_port")
+    DEFAULT_ADDRESS = config("apiserver").get("default_address")
     _MARSHAL_FLAG = config("marshal_server").get("marshal_request_header_flag")
 
     def __init__(
         self,
         bento_service: BentoService,
+        address=DEFAULT_ADDRESS,
         port=DEFAULT_PORT,
         app_name=None,
         enable_swagger=True,
     ):
         app_name = bento_service.name if app_name is None else app_name
 
+        self.address = address
         self.port = port
         self.bento_service = bento_service
         self.app = Flask(app_name, static_folder=None)
@@ -125,7 +128,11 @@ class BentoAPIServer:
         # Bentoml api service is not thread safe.
         # Flask dev server enabled threaded by default, disable it.
         self.app.run(
-            port=self.port, threaded=False, debug=get_debug_mode(), use_reloader=False,
+            host=self.address,
+            port=self.port,
+            threaded=False,
+            debug=get_debug_mode(),
+            use_reloader=False,
         )
 
     @staticmethod

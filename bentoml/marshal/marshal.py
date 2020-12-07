@@ -308,12 +308,12 @@ class MarshalService:
                 for i in merged
             )
 
-    def async_start(self, port):
+    def async_start(self, host, port):
         """
         Start an micro batch server at the specific port on the instance or parameter.
         """
         marshal_proc = multiprocessing.Process(
-            target=self.fork_start_app, kwargs=dict(port=port), daemon=True,
+            target=self.fork_start_app, kwargs=dict(host=host, port=port), daemon=True,
         )
         marshal_proc.start()
         logger.info("Running micro batch service on :%d", port)
@@ -325,10 +325,10 @@ class MarshalService:
         app.router.add_view("/{path:.*}", self.relay_handler)
         return app
 
-    def fork_start_app(self, port):
+    def fork_start_app(self, host, port):
         # Use new eventloop in the fork process to avoid problems on MacOS
         # ref: https://groups.google.com/forum/#!topic/python-tornado/DkXjSNPCzsI
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         app = self.make_app()
-        aiohttp.web.run_app(app, port=port)
+        aiohttp.web.run_app(app, host=host, port=port)

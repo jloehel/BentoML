@@ -170,6 +170,14 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
     )
     @conditional_argument(pip_installed_bundle_path is None, "bento", type=click.STRING)
     @click.option(
+        "--address",
+        type=click.STRING,
+        default=BentoAPIServer.DEFAULT_ADDRESS,
+        help=f"The address to listen on for the REST api server, "
+        f"default is {BentoAPIServer.DEFAULT_ADDRESS}",
+        envvar='BENTOML_ADDRESS',
+    )
+    @click.option(
         "--port",
         type=click.INT,
         default=BentoAPIServer.DEFAULT_PORT,
@@ -200,6 +208,7 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
         envvar='BENTOML_ENABLE_SWAGGER',
     )
     def serve(
+        address,
         port,
         bento=None,
         enable_microbatch=False,
@@ -214,6 +223,7 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
         )
         start_dev_server(
             saved_bundle_path,
+            address,
             port,
             enable_microbatch,
             mb_max_batch_size,
@@ -229,6 +239,14 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
         short_help="Start production API server",
     )
     @conditional_argument(pip_installed_bundle_path is None, "bento", type=click.STRING)
+    @click.option(
+        "--address",
+        type=click.STRING,
+        default=BentoAPIServer.DEFAULT_ADDRESS,
+        help=f"The address to listen on for the REST api server, "
+        f"default is {BentoAPIServer.DEFAULT_ADDRESS}",
+        envvar='BENTOML_ADDRESS',
+    )
     @click.option(
         "-p",
         "--port",
@@ -269,6 +287,7 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
         envvar='BENTOML_ENABLE_SWAGGER',
     )
     def serve_gunicorn(
+        address,
         port,
         workers,
         timeout,
@@ -293,6 +312,7 @@ def create_bento_service_cli(pip_installed_bundle_path=None):
         )
         start_prod_server(
             saved_bundle_path,
+            address,
             port,
             timeout,
             workers,

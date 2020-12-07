@@ -44,6 +44,7 @@ def async_trace(*args, **kwargs):
 
 def start_dev_server(
     saved_bundle_path: str,
+    address: str,
     port: int,
     enable_microbatch: bool,
     mb_max_batch_size: int,
@@ -81,19 +82,23 @@ def start_dev_server(
                 mb_max_latency=mb_max_latency,
             )
             api_server = BentoAPIServer(
-                bento_service, port=api_server_port, enable_swagger=enable_swagger
+                bento_service,
+                address="localhost",
+                port=api_server_port,
+                enable_swagger=enable_swagger,
             )
-        marshal_server.async_start(port=port)
+        marshal_server.async_start(host=address, port=port)
         api_server.start()
     else:
         api_server = BentoAPIServer(
-            bento_service, port=port, enable_swagger=enable_swagger
+            bento_service, address=address, port=port, enable_swagger=enable_swagger
         )
         api_server.start()
 
 
 def start_prod_server(
     saved_bundle_path: str,
+    address: str,
     port: int,
     timeout: int,
     workers: int,
@@ -126,6 +131,7 @@ def start_prod_server(
         with reserve_free_port() as api_server_port:
             marshal_server = GunicornMarshalServer(
                 bundle_path=saved_bundle_path,
+                address=address,
                 port=port,
                 workers=microbatch_workers,
                 prometheus_lock=prometheus_lock,
@@ -138,6 +144,7 @@ def start_prod_server(
 
             gunicorn_app = GunicornBentoServer(
                 saved_bundle_path,
+                "localhost",
                 api_server_port,
                 workers,
                 timeout,
@@ -148,6 +155,6 @@ def start_prod_server(
         gunicorn_app.run()
     else:
         gunicorn_app = GunicornBentoServer(
-            saved_bundle_path, port, workers, timeout, enable_swagger=enable_swagger
+            saved_bundle_path, address, port, workers, timeout, enable_swagger=enable_swagger
         )
         gunicorn_app.run()

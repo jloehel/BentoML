@@ -59,6 +59,7 @@ class GunicornBentoServer(Application):  # pylint: disable=abstract-method
     def __init__(
         self,
         bundle_path,
+        address=None,
         port=None,
         workers=None,
         timeout=None,
@@ -68,10 +69,11 @@ class GunicornBentoServer(Application):  # pylint: disable=abstract-method
         self.bento_service_bundle_path = bundle_path
 
         self.port = port or config("apiserver").getint("default_port")
+        self.address = address or config("apiserver").get("default_address")
         timeout = timeout or config("apiserver").getint("default_timeout")
         max_request_size = config("apiserver").getint("default_max_request_size")
         self.options = {
-            "bind": "%s:%s" % ("0.0.0.0", self.port),
+            "bind": "%s:%s" % (self.address, self.port),
             "timeout": timeout,
             "limit_request_line": max_request_size,
             "loglevel": config("logging").get("LEVEL").upper(),
